@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: "Comic Sans MS", "Chalkboard SE", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            background-color: #e6f3ff;
+        }
+
+        .clock-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            margin: 20px;
+        }
+
+        .clock {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #a3d4ff;
+            position: relative;
+            background: #f0f8ff;
+            box-shadow: 0 0 20px rgba(163, 212, 255, 0.5),
+                        inset 0 0 30px rgba(163, 212, 255, 0.3);
+        }
+
+        .hour-mark {
+            position: absolute;
+            width: 40px;
+            height: 20px;
+            text-align: center;
+            transform-origin: 50% 300px;
+            left: calc(50% - 20px);
+            font-weight: bold;
+            color: #6eb5ff;
+        }
+
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom;
+            background: #6eb5ff;
+            border-radius: 10px;
+        }
+
+        .hour-hand {
+            width: 6px;
+            height: 25%;
+            margin-left: -3px;
+        }
+
+        .minute-hand {
+            width: 4px;
+            height: 35%;
+            margin-left: -2px;
+        }
+
+        .second-hand {
+            width: 2px;
+            height: 40%;
+            background: #ff9ecd;
+            margin-left: -1px;
+        }
+
+        .center-dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #6eb5ff;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(110, 181, 255, 0.5);
+        }
+
+        .event-arc {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .event-label {
+            position: absolute;
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-button {
+            padding: 12px 24px;
+            background: #6eb5ff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(110, 181, 255, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: "Comic Sans MS", "Chalkboard SE", sans-serif;
+        }
+
+        .add-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(110, 181, 255, 0.4);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(230, 243, 255, 0.8);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 400px;
+            box-shadow: 0 10px 25px rgba(110, 181, 255, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #6eb5ff;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #a3d4ff;
+            border-radius: 15px;
+            font-family: "Comic Sans MS", "Chalkboard SE", sans-serif;
+            color: #6eb5ff;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .button-group button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: "Comic Sans MS", "Chalkboard SE", sans-serif;
+            transition: transform 0.2s;
+        }
+
+        .button-group button[type="submit"] {
+            background: #6eb5ff;
+            color: white;
+        }
+
+        .button-group button[type="button"] {
+            background: #ffd6e6;
+            color: #ff6b9c;
+        }
+
+        .events-list {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 25px;
+        }
+
+        .event-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(110, 181, 255, 0.1);
+        }
+
+        .delete-button {
+            background: none;
+            border: none;
+            color: #ff9ecd;
+            cursor: pointer;
+            padding: 8px;
+            font-size: 20px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .delete-button:hover {
+            background-color: rgba(255, 158, 205, 0.1);
+        }
+
+        h2 {
+            color: #6eb5ff;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body>
+    <marquee behavior="alternate" direction="right">
+        <img src="https://media.tenor.com/OVcN3WE7GpIAAAAi/bubu-dudu-bubu.gif" alt="Loading GIF">
+        <img src="https://media.tenor.com/2d2whC3Da3cAAAAj/milk-and-mocha.gif" alt="Loading GIF">
+
+    </marquee>
+    <button class="add-button" onclick="showModal()">
+        <span>✨</span> Add Event
+    </button>
+
+    <div class="clock-container">
+        <div class="clock" id="clock">
+            <div class="hand hour-hand"></div>
+            <div class="hand minute-hand"></div>
+            <div class="hand second-hand"></div>
+            <div class="center-dot"></div>
+        </div>
+    </div>
+
+    <div class="events-list" id="eventsList"></div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h2>✨ Add New Event ✨</h2>
+            <form id="eventForm" onsubmit="addEvent(event)">
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <select name="startHour" required>
+                        <option value="">Select time</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>End Time</label>
+                    <select name="endHour" required>
+                        <option value="">Select time</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" name="description" required>
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <input type="color" name="color" value="#6eb5ff">
+                </div>
+                <div class="button-group">
+                    <button type="button" onclick="hideModal()">Cancel</button>
+                    <button type="submit">Add Event ✨</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+
+    <script>
+        const events = [];
+        const modal = document.getElementById('modal');
+        const clock = document.getElementById('clock');
+        const eventsList = document.getElementById('eventsList');
+
+        // Initialize hour marks and time selects
+        function initialize() {
+            // Add hour marks
+            for (let i = 0; i < 24; i++) {
+                const mark = document.createElement('div');
+                mark.className = 'hour-mark';
+                mark.textContent = `${i}:00`;
+                mark.style.transform = `rotate(${i * 15}deg)`;
+                clock.appendChild(mark);
+            }
+
+            // Populate time selects
+            const selects = document.querySelectorAll('select');
+            for (const select of selects) {
+                for (let i = 0; i < 24; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i}:00`;
+                    select.appendChild(option);
+                }
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            const hourDeg = (hours % 12 + minutes / 60) * 30;
+            const minuteDeg = minutes * 6;
+            const secondDeg = seconds * 6;
+
+            document.querySelector('.hour-hand').style.transform = `rotate(${hourDeg}deg)`;
+            document.querySelector('.minute-hand').style.transform = `rotate(${minuteDeg}deg)`;
+            document.querySelector('.second-hand').style.transform = `rotate(${secondDeg}deg)`;
+        }
+
+        function showModal() {
+            modal.style.display = 'flex';
+        }
+
+        function hideModal() {
+            modal.style.display = 'none';
+        }
+
+        function createArc(startHour, endHour, color) {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'event-arc');
+            svg.setAttribute('viewBox', '0 0 600 600');
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            
+            const startAngle = ((startHour - 6) * 360) / 24;
+            const endAngle = ((endHour - 6) * 360) / 24;
+            
+            const start = {
+                x: 300 + 250 * Math.cos(startAngle * Math.PI / 180),
+                y: 300 + 250 * Math.sin(startAngle * Math.PI / 180)
+            };
+            
+            const end = {
+                x: 300 + 250 * Math.cos(endAngle * Math.PI / 180),
+                y: 300 + 250 * Math.sin(endAngle * Math.PI / 180)
+            };
+
+            const largeArcFlag = Math.abs(endAngle - startAngle) > 180 ? 1 : 0;
+            
+            path.setAttribute('d', `M ${start.x} ${start.y} A 250 250 0 ${largeArcFlag} 1 ${end.x} ${end.y}`);
+            path.setAttribute('stroke', color);
+            path.setAttribute('stroke-width', '40');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('opacity', '0.3');
+
+            svg.appendChild(path);
+            return svg;
+        }
+
+        function addEvent(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const startHour = parseInt(formData.get('startHour'));
+            const endHour = parseInt(formData.get('endHour'));
+            
+            if (startHour >= endHour) {
+                alert('End time must be after start time');
+                return;
+            }
+
+            const event = {
+                startHour,
+                endHour,
+                description: formData.get('description'),
+                color: formData.get('color')
+            };
+
+            events.push(event);
+            updateEvents();
+            hideModal();
+            e.target.reset();
+        }
+
+        function updateEvents() {
+            // Clear existing events
+            const existingArcs = document.querySelectorAll('.event-arc');
+            const existingLabels = document.querySelectorAll('.event-label');
+            existingArcs.forEach(arc => arc.remove());
+            existingLabels.forEach(label => label.remove());
+
+            // Update events list
+            eventsList.innerHTML = '';
+
+            events.forEach((event, index) => {
+                // Add arc
+                const arc = createArc(event.startHour, event.endHour, event.color);
+                clock.appendChild(arc);
+
+                // Add label
+                const label = document.createElement('div');
+                label.className = 'event-label';
+                label.textContent = event.description;
+                label.style.backgroundColor = event.color;
+
+                const angle = (((event.startHour + event.endHour) / 2 - 6) * 360) / 24;
+                const radians = angle * Math.PI / 180;
+                const x = Math.cos(radians);
+                const y = Math.sin(radians);
+
+                label.style.left = `${50 + 35 * x}%`;
+                label.style.top = `${50 + 35 * y}%`;
+                clock.appendChild(label);
+
+                // Add to list
+                const listItem = document.createElement('div');
+                listItem.className = 'event-item';
+                listItem.style.backgroundColor = `${event.color}20`;
+                listItem.innerHTML = `
+                    <span>${event.startHour}:00 - ${event.endHour}:00 ${event.description}</span>
+                    <button class="delete-button" onclick="deleteEvent(${index})">×</button>
+                `;
+                eventsList.appendChild(listItem);
+            });
+        }
+
+        function deleteEvent(index) {
+            events.splice(index, 1);
+            updateEvents();
+        }
+
+        initialize();
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+
+    
+</body>
+</html>
